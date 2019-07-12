@@ -1,36 +1,65 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import { connect } from "react-redux";
+import { fetchStreams } from "../../actions";
 
 class StreamList extends React.Component {
+  componentDidMount() {
+    this.props.fetchStreams();
+  }
+  renderAdminActions(stream) {
+    if (stream.userId === this.props.currentUserId) {
+      return (
+        <div className="right floated content">
+          <button className="ui button primary">Edit</button>
+          <button className="ui button negative">Delete</button>
+        </div>
+      );
+    }
+  }
+  renderCreate() {
+    if (this.props.isSignedIn) {
+      return (
+        <div style={{ textAlign: "right" }}>
+          <Link to="/streams/new" className="ui button primary">
+            Create Stream
+          </Link>
+        </div>
+      );
+    }
+  }
+  renderList() {
+    return this.props.streams.map(stream => {
+      return (
+        <div className="item" key={stream.id}>
+          {this.renderAdminActions(stream)}
+          <i className="large camera middle aligned icon" />
+          <div className="content">
+            <div className="header">{stream.title}</div>
+            <div className="description">{stream.description}</div>
+          </div>
+        </div>
+      );
+    });
+  }
   render() {
     return (
-      <div className="ui divided list">
-        {/* <div className="item">
-          <i className="large camera middle aligned icon" />
-          <div className="content">
-            <a className="header">My First Stream</a>
-            <div className="description">Streaming now the first one</div>
-          </div>
-        </div>
-        <div className="item">
-          <i className="large camera middle aligned icon" />
-          <div className="content">
-            <a className="header">My First Stream</a>
-            <div className="description">Streaming now the first one</div>
-          </div>
-        </div>
-        <div className="item">
-          <div className="right floated content">
-            <div className="ui button">Edit</div>
-            <div className="ui button">Delete</div>
-          </div>
-          <i className="large camera middle aligned icon" />
-          <div className="content">
-            <a className="header">My First Stream</a>
-            <div className="description">Streaming now the first one</div>
-          </div>
-        </div> */}
+      <div>
+        <h2>Streams</h2>
+        <div className="ui celled list">{this.renderList()}</div>
+        {this.renderCreate()}
       </div>
     );
   }
 }
-export default StreamList;
+const mapStateToProps = state => {
+  return {
+    streams: Object.values(state.streams),
+    currentUserId: state.auth.userId,
+    isSignedIn: state.auth.isSignedIn
+  };
+};
+export default connect(
+  mapStateToProps,
+  { fetchStreams }
+)(StreamList);
